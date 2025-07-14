@@ -1,7 +1,7 @@
 package com.luis.spotify.controller;
 
 import com.luis.spotify.dto.SpotifyUserProfile;
-import com.luis.spotify.service.SpotifyApiService;
+import com.luis.spotify.service.impl.SpotifyApiServiceImpl;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -14,12 +14,12 @@ import java.security.Principal;
 @Slf4j
 public class SpotifyApiController {
     @Autowired
-    private SpotifyApiService spotifyApiService;
+    private SpotifyApiServiceImpl spotifyApiServiceImpl;
 
     @GetMapping("/me")
     public ResponseEntity<SpotifyUserProfile> getUserInfo(Principal user) {
         log.info("Get user {} details", user.getName());
-        SpotifyUserProfile profile = spotifyApiService.getUserInfo(user);
+        SpotifyUserProfile profile = spotifyApiServiceImpl.getUserInfo(user);
         return ResponseEntity.ok(profile);
     }
 

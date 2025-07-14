@@ -1,6 +1,6 @@
 package com.luis.spotify.config;
 
-import com.luis.spotify.service.JwtTokenProvider;
+import com.luis.spotify.service.impl.JwtTokenProviderServiceImpl;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -16,10 +16,10 @@ import java.util.List;
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
-    private final JwtTokenProvider jwtTokenProvider;
+    private final JwtTokenProviderServiceImpl jwtTokenProviderServiceImpl;
 
-    public JwtAuthenticationFilter(JwtTokenProvider jwtTokenProvider) {
-        this.jwtTokenProvider = jwtTokenProvider;
+    public JwtAuthenticationFilter(JwtTokenProviderServiceImpl jwtTokenProviderServiceImpl) {
+        this.jwtTokenProviderServiceImpl = jwtTokenProviderServiceImpl;
     }
 
     @Override
@@ -33,8 +33,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
             String token = authHeader.substring(7);
 
-            if (jwtTokenProvider.validateToken(token)) {
-                String userId = jwtTokenProvider.getUserIdFromJWT(token);
+            if (jwtTokenProviderServiceImpl.validateToken(token)) {
+                String userId = jwtTokenProviderServiceImpl.getUserIdFromJWT(token);
 
                 UsernamePasswordAuthenticationToken authentication =
                         new UsernamePasswordAuthenticationToken(userId, null, List.of());

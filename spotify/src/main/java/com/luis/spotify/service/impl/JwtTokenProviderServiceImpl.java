@@ -1,5 +1,6 @@
-package com.luis.spotify.service;
+package com.luis.spotify.service.impl;
 
+import com.luis.spotify.service.JwtTokenProviderService;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
@@ -17,7 +18,7 @@ import java.util.Map;
 
 @Slf4j
 @Service
-public class JwtTokenProvider {
+public class JwtTokenProviderServiceImpl implements JwtTokenProviderService {
     @Value("${app.jwtSecret}")
     private String jwtSecret;
 

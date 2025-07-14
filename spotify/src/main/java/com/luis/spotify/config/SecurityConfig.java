@@ -29,7 +29,6 @@ public class SecurityConfig {
     SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         return http.csrf().disable()
                 .authorizeHttpRequests(auth -> {
-                    auth.requestMatchers("/","/h2-console").permitAll();
                     auth.anyRequest().authenticated();
                 })
                 .oauth2Login(oauth2 -> oauth2

@@ -1,8 +1,8 @@
 package com.luis.spotify.config;
 
-import com.luis.spotify.UserSpotifyTokenRepository;
+import com.luis.spotify.repository.UserSpotifyTokenRepository;
 import com.luis.spotify.model.UserSpotifyTokens;
-import com.luis.spotify.service.JwtTokenProvider;
+import com.luis.spotify.service.impl.JwtTokenProviderServiceImpl;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
@@ -22,7 +22,7 @@ import java.io.IOException;
 @Slf4j
 @Component
 public class CustomAuthenticationSuccessHandler implements AuthenticationSuccessHandler {
-    private final JwtTokenProvider jwtTokenProvider;
+    private final JwtTokenProviderServiceImpl jwtTokenProviderServiceImpl;
     private final OAuth2AuthorizedClientRepository authorizedClientRepository;
     private final UserSpotifyTokenRepository userSpotifyTokenRepository;
 
@@ -30,11 +30,11 @@ public class CustomAuthenticationSuccessHandler implements AuthenticationSuccess
     private String frontendRedirectUrl;
 
     public CustomAuthenticationSuccessHandler(
-            JwtTokenProvider jwtTokenProvider,
+            JwtTokenProviderServiceImpl jwtTokenProviderServiceImpl,
             OAuth2AuthorizedClientRepository authorizedClientRepository,
             UserSpotifyTokenRepository userSpotifyTokenRepository
     ){
-        this.jwtTokenProvider = jwtTokenProvider;
+        this.jwtTokenProviderServiceImpl = jwtTokenProviderServiceImpl;
         this.authorizedClientRepository = authorizedClientRepository;
         this.userSpotifyTokenRepository = userSpotifyTokenRepository;
     }
@@ -46,7 +46,7 @@ public class CustomAuthenticationSuccessHandler implements AuthenticationSuccess
             Authentication authentication
     ) throws IOException
     {
-        String appJwt = jwtTokenProvider.generateToken(authentication);
+        String appJwt = jwtTokenProviderServiceImpl.generateToken(authentication);
         if(authentication instanceof OAuth2AuthenticationToken oauth2Token){
             System.out.println(authentication);
             String clientRegistrationId = oauth2Token.getAuthorizedClientRegistrationId();
