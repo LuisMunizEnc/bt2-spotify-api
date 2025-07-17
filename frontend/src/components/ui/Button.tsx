@@ -13,6 +13,7 @@ export const Button: React.FC<ButtonProps> = ({
   children,
   className = '',
   disabled,
+  ...props
 }) => {
   const baseClasses = 'inline-flex items-center justify-center rounded-lg font-medium transition-all duration-200 focus:outline-none bg-green-500 text-white hover:bg-green-600 focus:ring-green-500 shadow-lg hover:shadow-xl';
 
@@ -28,6 +29,7 @@ export const Button: React.FC<ButtonProps> = ({
     <button
       className={`${baseClasses} ${sizeClasses[size]} ${isDisabled ? 'opacity-90 cursor-not-allowed' : ''} ${className}`}
       disabled={isDisabled}
+      {...props}
     >
       {loading && <LoadingSpinner size="sm" className="mr-2" />}
       {!loading && children}

@@ -1,6 +1,6 @@
 export interface User {
     id: string;
-    displayName: string;
+    display_name: string;
     email: string;
     images?: SpotifyImage[];
     country?: string;
@@ -60,4 +60,14 @@ export interface Owner{
 }
 export interface externalURLs{
     spotify: string;
+}
+
+
+export interface AuthContextType {
+    user: User | null;
+    token: string | null;
+    login: (token: string) => void;
+    logout: () => void;
+    isAuthenticated: boolean;
+    loading: boolean;
 }
