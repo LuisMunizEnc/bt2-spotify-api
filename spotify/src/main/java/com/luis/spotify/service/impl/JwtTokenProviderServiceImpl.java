@@ -55,14 +55,19 @@ public class JwtTokenProviderServiceImpl implements JwtTokenProviderService {
         try {
             Jwts.parser().verifyWith(getSigningKey()).build().parseSignedClaims(authToken);
             return true;
-        } catch (Exception ex) {
-            log.info("JWT validation failed: " + ex.getMessage());
+        } catch (io.jsonwebtoken.security.SignatureException ex) {
+            log.error("Invalid JWT signature: {}", ex.getMessage());
+        } catch (io.jsonwebtoken.ExpiredJwtException ex) {
+            log.error("Expired JWT token: {}", ex.getMessage());
+        } catch (io.jsonwebtoken.MalformedJwtException ex) {
+            log.error("Malformed JWT token: {}", ex.getMessage());
+        } catch (IllegalArgumentException ex) {
+            log.error("JWT claims string is empty: {}", ex.getMessage());
         }
         return false;
     }
 
     public String getUserIdFromJWT(String token){
-        log.info("JWT found, getting user id");
         return Jwts.parser().verifyWith(getSigningKey()).build()
                 .parseSignedClaims(token).getPayload().get("userId").toString();
     }

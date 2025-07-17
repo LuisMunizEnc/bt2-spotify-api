@@ -3,7 +3,6 @@ package com.luis.spotify.service.impl;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.MalformedJwtException;
-import io.jsonwebtoken.UnsupportedJwtException;
 import io.jsonwebtoken.security.SignatureException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -28,7 +27,7 @@ public class JwtProviderServiceImplTest {
     @BeforeEach
     void setup(){
         ReflectionTestUtils.setField(jwtTokenProvider, "jwtSecret", "thisisalongsecretkeyforjwttokenproviderthatisatleast256bitslong");
-        ReflectionTestUtils.setField(jwtTokenProvider, "jwtExpirationMs", 3600000);
+        ReflectionTestUtils.setField(jwtTokenProvider, "jwtExpirationMs", 3600000L);
     }
 
     @Test
@@ -164,12 +163,40 @@ public class JwtProviderServiceImplTest {
     }
 
     @Test
-    void givenInvalidJwtToken_whenGetAllClaimsFromJWT_thenThrowJwtException() {
+    void givenUnsupportedJwtToken_whenValidateToken_thenReturnFalse() {
         // given
-        String invalidToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKx";
+        String unsupportedToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.unsupported.token.format";
 
-        // when / then
-        assertThrows(Exception.class, () -> jwtTokenProvider.getAllClaimsFromJWT(invalidToken));
+        // when
+        boolean isValid = jwtTokenProvider.validateToken(unsupportedToken);
+
+        // then
+        assertFalse(isValid);
+    }
+
+    @Test
+    void givenMalformedJwtToken_whenValidateToken_thenReturnFalse() {
+        // given
+        String malformedToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoiSm9obiBEb2UiLCJpYXQiOjE1MTYyMzkwMjJ9.SflKx_invalid";
+
+        // when
+        boolean isValid = jwtTokenProvider.validateToken(malformedToken);
+
+        // then
+        assertFalse(isValid);
+    }
+
+    @Test
+    void givenEmptyJwtToken_whenValidateToken_thenThrowIllegalArgumentExceptionAndReturnFalse() {
+        // given
+        String emptyToken = "";
+
+        // when
+        boolean isValid = jwtTokenProvider.validateToken(emptyToken);
+
+        // then
+        assertThrows(IllegalArgumentException.class, () -> jwtTokenProvider.getAllClaimsFromJWT(emptyToken));
+        assertFalse(isValid);
     }
 
     @Test
@@ -211,11 +238,20 @@ public class JwtProviderServiceImplTest {
     }
 
     @Test
-    void givenUnsupportedFormatJwtToken_whenGetAllClaimsFromJWT_thenThrowUnsupportedJwtException() {
+    void givenMalformedJwtToken_whenGetAllClaimsFromJWT_thenThrowMalformedJwtException() {
         // given
-        String unsupportedToken = "unsupported.token.format";
+        String malformedToken = "header.payload.signature";
 
         // when / then
-        assertThrows(MalformedJwtException.class, () -> jwtTokenProvider.getAllClaimsFromJWT(unsupportedToken));
+        assertThrows(MalformedJwtException.class, () -> jwtTokenProvider.getAllClaimsFromJWT(malformedToken));
+    }
+
+    @Test
+    void givenNullJwtToken_whenGetAllClaimsFromJWT_then() {
+        // given
+        String nullToken = null;
+
+        // when / then
+        assertThrows(IllegalArgumentException.class, () -> jwtTokenProvider.getAllClaimsFromJWT(nullToken));
     }
 }

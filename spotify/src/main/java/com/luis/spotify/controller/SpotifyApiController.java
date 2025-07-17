@@ -13,8 +13,11 @@ import java.security.Principal;
 @RestController
 @Slf4j
 public class SpotifyApiController {
-    @Autowired
-    private SpotifyApiServiceImpl spotifyApiServiceImpl;
+    private final SpotifyApiServiceImpl spotifyApiServiceImpl;
+
+    public SpotifyApiController(SpotifyApiServiceImpl spotifyApiServiceImpl) {
+        this.spotifyApiServiceImpl = spotifyApiServiceImpl;
+    }
 
     @GetMapping("/me")
     public ResponseEntity<SpotifyUserProfile> getUserInfo(Principal user) {

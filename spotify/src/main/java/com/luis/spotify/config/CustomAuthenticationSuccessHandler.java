@@ -46,9 +46,8 @@ public class CustomAuthenticationSuccessHandler implements AuthenticationSuccess
             Authentication authentication
     ) throws IOException
     {
-        String appJwt = jwtTokenProviderServiceImpl.generateToken(authentication);
         if(authentication instanceof OAuth2AuthenticationToken oauth2Token){
-            System.out.println(authentication);
+            String appJwt = jwtTokenProviderServiceImpl.generateToken(authentication);
             String clientRegistrationId = oauth2Token.getAuthorizedClientRegistrationId();
 
             OAuth2AuthorizedClient authorizedClient = authorizedClientRepository
@@ -74,16 +73,10 @@ public class CustomAuthenticationSuccessHandler implements AuthenticationSuccess
 
                 userSpotifyTokenRepository.save(userTokens);
 
-                log.info("User info to save: {}", userTokens.getSpotifyUserId());
-                log.info("Spotify Access Token obtained: {}", userTokens.getAccessToken());
-                if (refreshToken != null) {
-                    log.info("Spotify Refresh Token obtained: {}", userTokens.getRefreshToken());
-                }
-                log.info("User session expiration: {}", userTokens.getAccessTokenExpiresAt());
-
+                log.info("User {} saved tokens", userTokens.getSpotifyUserId());
             }
 
             response.sendRedirect( frontendRedirectUrl+"?token=" + appJwt);
-        }
+        }else log.info("Authentication different from OAuth");
     }
 }

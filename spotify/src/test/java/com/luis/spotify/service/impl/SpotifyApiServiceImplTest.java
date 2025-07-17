@@ -3,19 +3,15 @@ package com.luis.spotify.service.impl;
 import com.luis.spotify.dto.SpotifyUserProfile;
 import com.luis.spotify.model.UserSpotifyTokens;
 import com.luis.spotify.repository.UserSpotifyTokenRepository;
-import com.luis.spotify.service.SpotifyApiService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.test.util.ReflectionTestUtils;
-import org.springframework.web.reactive.function.BodyInserters;
-import org.springframework.web.reactive.function.client.WebClient;
-import reactor.core.publisher.Mono;
+import org.springframework.web.client.RestClient;
 
 import java.security.Principal;
 import java.time.Instant;
@@ -31,33 +27,33 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 public class SpotifyApiServiceImplTest {
     @Mock
-    private WebClient.Builder webClientBuilder;
+    private RestClient.Builder restClientBuilder;
+
     @Mock
     private UserSpotifyTokenRepository tokenRepository;
+
     @Mock
-    private WebClient mockSpotifyApiWebClient;
+    private RestClient mockSpotifyApiRestClient;
     @Mock
-    private WebClient mockSpotifyAuthWebClient;
+    private RestClient mockSpotifyAuthRestClient;
+
     @Mock
-    private WebClient.RequestHeadersUriSpec requestHeadersUriSpec;
+    private RestClient.RequestHeadersUriSpec requestHeadersUriSpec;
     @Mock
-    private WebClient.RequestHeadersSpec requestHeadersSpec;
+    private RestClient.RequestHeadersSpec requestHeadersSpec;
     @Mock
-    private WebClient.RequestBodyUriSpec requestBodyUriSpec;
+    private RestClient.RequestBodyUriSpec requestBodyUriSpec;
     @Mock
-    private WebClient.RequestBodySpec requestBodySpec;
+    private RestClient.RequestBodySpec requestBodySpec;
     @Mock
-    private WebClient.ResponseSpec responseSpec;
-    @Mock
-    private Mono<SpotifyUserProfile> spotifyUserProfileMono;
-    @Mock
-    private Mono<Map> mapMono;
+    private RestClient.ResponseSpec responseSpec;
 
     private SpotifyApiServiceImpl spotifyApiService;
 
     private static final String CLIENT_ID = "testClientId";
     private static final String CLIENT_SECRET = "testClientSecret";
     private static final String TOKEN_URI = "https://accounts.spotify.com/api/token";
+    private static final String API_URI = "https://api.spotify.com/v1";
     private static final String SPOTIFY_USER_ID = "testSpotifyUser";
     private static final String INITIAL_ACCESS_TOKEN = "initialAccessToken";
     private static final String INITIAL_REFRESH_TOKEN = "initialRefreshToken";
@@ -66,14 +62,13 @@ public class SpotifyApiServiceImplTest {
 
     @BeforeEach
     void setUp() {
-        when(webClientBuilder.baseUrl(anyString())).thenReturn(webClientBuilder);
-        when(webClientBuilder.build()).thenReturn(mockSpotifyApiWebClient, mockSpotifyAuthWebClient);
-
-        spotifyApiService = new SpotifyApiServiceImpl(webClientBuilder, tokenRepository);
+        when(restClientBuilder.build()).thenReturn(mockSpotifyApiRestClient, mockSpotifyAuthRestClient);
+        spotifyApiService = new SpotifyApiServiceImpl(restClientBuilder, tokenRepository);
 
         ReflectionTestUtils.setField(spotifyApiService, "clientId", CLIENT_ID);
         ReflectionTestUtils.setField(spotifyApiService, "clientSecret", CLIENT_SECRET);
         ReflectionTestUtils.setField(spotifyApiService, "tokenUri", TOKEN_URI);
+        ReflectionTestUtils.setField(spotifyApiService, "apiUri", API_URI);
     }
 
     @Test
@@ -90,15 +85,13 @@ public class SpotifyApiServiceImplTest {
 
         when(tokenRepository.findById(SPOTIFY_USER_ID)).thenReturn(Optional.of(userTokens));
 
-        when(mockSpotifyApiWebClient.get()).thenReturn(requestHeadersUriSpec);
-        when(requestHeadersUriSpec.uri("/me")).thenReturn(requestHeadersSpec);
+        when(mockSpotifyApiRestClient.get()).thenReturn(requestHeadersUriSpec);
+        when(requestHeadersUriSpec.uri(API_URI + "/me")).thenReturn(requestHeadersSpec);
         when(requestHeadersSpec.header(HttpHeaders.AUTHORIZATION, "Bearer " + INITIAL_ACCESS_TOKEN)).thenReturn(requestHeadersSpec);
         when(requestHeadersSpec.retrieve()).thenReturn(responseSpec);
-        when(responseSpec.bodyToMono(SpotifyUserProfile.class)).thenReturn(spotifyUserProfileMono);
-
         SpotifyUserProfile expectedProfile = new SpotifyUserProfile();
         expectedProfile.setDisplayName("Test User Display");
-        when(spotifyUserProfileMono.block()).thenReturn(expectedProfile);
+        when(responseSpec.body(SpotifyUserProfile.class)).thenReturn(expectedProfile);
 
         // when
         SpotifyUserProfile actualProfile = spotifyApiService.getUserInfo(principal);
@@ -109,8 +102,9 @@ public class SpotifyApiServiceImplTest {
 
         verify(tokenRepository).findById(SPOTIFY_USER_ID);
         verify(tokenRepository, never()).save(any(UserSpotifyTokens.class));
-        verify(mockSpotifyApiWebClient).get();
+        verify(mockSpotifyApiRestClient).get();
         verify(requestHeadersSpec).header(HttpHeaders.AUTHORIZATION, "Bearer " + INITIAL_ACCESS_TOKEN);
+        verify(responseSpec).body(SpotifyUserProfile.class);
     }
 
     @Test
@@ -127,29 +121,26 @@ public class SpotifyApiServiceImplTest {
 
         when(tokenRepository.findById(SPOTIFY_USER_ID)).thenReturn(Optional.of(userTokens));
 
-        when(mockSpotifyAuthWebClient.post()).thenReturn(requestBodyUriSpec);
+        when(mockSpotifyAuthRestClient.post()).thenReturn(requestBodyUriSpec);
         when(requestBodyUriSpec.uri(TOKEN_URI)).thenReturn(requestBodySpec);
         when(requestBodySpec.header(eq(HttpHeaders.AUTHORIZATION), anyString())).thenReturn(requestBodySpec);
         when(requestBodySpec.contentType(MediaType.APPLICATION_FORM_URLENCODED)).thenReturn(requestBodySpec);
-        when(requestBodySpec.body(any(BodyInserters.FormInserter.class))).thenReturn(requestHeadersSpec);
-        when(requestHeadersSpec.retrieve()).thenReturn(responseSpec);
-        when(responseSpec.bodyToMono(Map.class)).thenReturn(mapMono);
+        when(requestBodySpec.body(any(String.class))).thenReturn(requestBodySpec);
+        when(requestBodySpec.retrieve()).thenReturn(responseSpec);
 
         Map<String, Object> refreshTokenResponse = new HashMap<>();
         refreshTokenResponse.put("access_token", NEW_ACCESS_TOKEN);
         refreshTokenResponse.put("expires_in", 3600);
         refreshTokenResponse.put("refresh_token", NEW_REFRESH_TOKEN);
-        when(mapMono.block()).thenReturn(refreshTokenResponse);
+        when(responseSpec.body(Map.class)).thenReturn(refreshTokenResponse);
 
-        when(mockSpotifyApiWebClient.get()).thenReturn(requestHeadersUriSpec);
-        when(requestHeadersUriSpec.uri("/me")).thenReturn(requestHeadersSpec);
+        when(mockSpotifyApiRestClient.get()).thenReturn(requestHeadersUriSpec);
+        when(requestHeadersUriSpec.uri(API_URI + "/me")).thenReturn(requestHeadersSpec);
         when(requestHeadersSpec.header(HttpHeaders.AUTHORIZATION, "Bearer " + NEW_ACCESS_TOKEN)).thenReturn(requestHeadersSpec);
         when(requestHeadersSpec.retrieve()).thenReturn(responseSpec);
-        when(responseSpec.bodyToMono(SpotifyUserProfile.class)).thenReturn(spotifyUserProfileMono);
-
         SpotifyUserProfile expectedProfile = new SpotifyUserProfile();
         expectedProfile.setDisplayName("Refreshed User Display");
-        when(spotifyUserProfileMono.block()).thenReturn(expectedProfile);
+        when(responseSpec.body(SpotifyUserProfile.class)).thenReturn(expectedProfile);
 
         // when
         SpotifyUserProfile actualProfile = spotifyApiService.getUserInfo(principal);
@@ -159,12 +150,12 @@ public class SpotifyApiServiceImplTest {
         assertEquals("Refreshed User Display", actualProfile.getDisplayName());
 
         verify(tokenRepository).findById(SPOTIFY_USER_ID);
-        verify(mockSpotifyAuthWebClient).post();
+        verify(mockSpotifyAuthRestClient).post();
         verify(tokenRepository).save(userTokens);
         assertEquals(NEW_ACCESS_TOKEN, userTokens.getAccessToken());
         assertEquals(NEW_REFRESH_TOKEN, userTokens.getRefreshToken());
         assertTrue(userTokens.getAccessTokenExpiresAt().isAfter(Instant.now()));
-        verify(mockSpotifyApiWebClient).get();
+        verify(mockSpotifyApiRestClient).get();
         verify(requestHeadersSpec).header(HttpHeaders.AUTHORIZATION, "Bearer " + NEW_ACCESS_TOKEN);
     }
 
@@ -178,11 +169,11 @@ public class SpotifyApiServiceImplTest {
 
         // when / then
         RuntimeException thrown = assertThrows(RuntimeException.class, () ->
-                        spotifyApiService.getUserInfo(principal));
+                spotifyApiService.getUserInfo(principal));
         assertEquals("No tokens found for user: " + SPOTIFY_USER_ID, thrown.getMessage());
 
         verify(tokenRepository).findById(SPOTIFY_USER_ID);
-        verifyNoInteractions(mockSpotifyApiWebClient, mockSpotifyAuthWebClient);
+        verifyNoInteractions(mockSpotifyApiRestClient, mockSpotifyAuthRestClient);
     }
 
     @Test
@@ -199,27 +190,26 @@ public class SpotifyApiServiceImplTest {
 
         when(tokenRepository.findById(SPOTIFY_USER_ID)).thenReturn(Optional.of(userTokens));
 
-        when(mockSpotifyAuthWebClient.post()).thenReturn(requestBodyUriSpec);
+        when(mockSpotifyAuthRestClient.post()).thenReturn(requestBodyUriSpec);
         when(requestBodyUriSpec.uri(TOKEN_URI)).thenReturn(requestBodySpec);
         when(requestBodySpec.header(eq(HttpHeaders.AUTHORIZATION), anyString())).thenReturn(requestBodySpec);
         when(requestBodySpec.contentType(MediaType.APPLICATION_FORM_URLENCODED)).thenReturn(requestBodySpec);
-        when(requestBodySpec.body(any(BodyInserters.FormInserter.class))).thenReturn(requestHeadersSpec);
-        when(requestHeadersSpec.retrieve()).thenReturn(responseSpec);
-        when(responseSpec.bodyToMono(Map.class)).thenReturn(mapMono);
+        when(requestBodySpec.body(any(String.class))).thenReturn(requestBodySpec);
+        when(requestBodySpec.retrieve()).thenReturn(responseSpec);
 
         Map<String, Object> refreshTokenErrorResponse = new HashMap<>();
         refreshTokenErrorResponse.put("error", "invalid_grant");
-        when(mapMono.block()).thenReturn(refreshTokenErrorResponse);
+        when(responseSpec.body(Map.class)).thenReturn(refreshTokenErrorResponse);
 
         // when / then
         RuntimeException thrown = assertThrows(RuntimeException.class, () ->
-                        spotifyApiService.getUserInfo(principal));
+                spotifyApiService.getUserInfo(principal));
         assertTrue(thrown.getMessage().contains("Failed to refresh Spotify Access Token"));
 
         verify(tokenRepository).findById(SPOTIFY_USER_ID);
-        verify(mockSpotifyAuthWebClient).post();
+        verify(mockSpotifyAuthRestClient).post();
         verify(tokenRepository, never()).save(any(UserSpotifyTokens.class));
-        verifyNoMoreInteractions(mockSpotifyApiWebClient);
+        verifyNoMoreInteractions(mockSpotifyApiRestClient);
     }
 
     @Test
@@ -236,23 +226,113 @@ public class SpotifyApiServiceImplTest {
 
         when(tokenRepository.findById(SPOTIFY_USER_ID)).thenReturn(Optional.of(userTokens));
 
-        when(mockSpotifyAuthWebClient.post()).thenReturn(requestBodyUriSpec);
+        when(mockSpotifyAuthRestClient.post()).thenReturn(requestBodyUriSpec);
         when(requestBodyUriSpec.uri(TOKEN_URI)).thenReturn(requestBodySpec);
         when(requestBodySpec.header(eq(HttpHeaders.AUTHORIZATION), anyString())).thenReturn(requestBodySpec);
         when(requestBodySpec.contentType(MediaType.APPLICATION_FORM_URLENCODED)).thenReturn(requestBodySpec);
-        when(requestBodySpec.body(any(BodyInserters.FormInserter.class))).thenReturn(requestHeadersSpec);
-        when(requestHeadersSpec.retrieve()).thenReturn(responseSpec);
-        when(responseSpec.bodyToMono(Map.class)).thenReturn(mapMono);
-        when(mapMono.block()).thenReturn(null);
+        when(requestBodySpec.body(any(String.class))).thenReturn(requestBodySpec);
+        when(requestBodySpec.retrieve()).thenReturn(responseSpec);
+        when(responseSpec.body(Map.class)).thenReturn(null);
 
         // when / then
         RuntimeException thrown = assertThrows(RuntimeException.class, () ->
-                        spotifyApiService.getUserInfo(principal));
-        assertTrue(thrown.getMessage().contains("Failed to refresh Spotify Access Token"), "El mensaje de error debe indicar fallo en el refresh");
+                spotifyApiService.getUserInfo(principal));
+        assertTrue(thrown.getMessage().contains("Failed to refresh Spotify Access Token"));
 
         verify(tokenRepository).findById(SPOTIFY_USER_ID);
-        verify(mockSpotifyAuthWebClient).post();
+        verify(mockSpotifyAuthRestClient).post();
         verify(tokenRepository, never()).save(any(UserSpotifyTokens.class));
-        verifyNoMoreInteractions(mockSpotifyApiWebClient);
+        verifyNoMoreInteractions(mockSpotifyApiRestClient);
+    }
+
+    @Test
+    void givenUserWithExpiredSpotifyTokenAndNullRefreshToken_whenGetUserInfo_thenThrowRuntimeException() {
+        // given
+        Principal principal = mock(Principal.class);
+        when(principal.getName()).thenReturn(SPOTIFY_USER_ID);
+
+        UserSpotifyTokens userTokens = new UserSpotifyTokens();
+        userTokens.setSpotifyUserId(SPOTIFY_USER_ID);
+        userTokens.setAccessToken(INITIAL_ACCESS_TOKEN);
+        userTokens.setAccessTokenExpiresAt(Instant.now().minus(1, ChronoUnit.HOURS));
+        userTokens.setRefreshToken(null);
+
+        when(tokenRepository.findById(SPOTIFY_USER_ID)).thenReturn(Optional.of(userTokens));
+
+        when(mockSpotifyAuthRestClient.post()).thenReturn(requestBodyUriSpec);
+        when(requestBodyUriSpec.uri(TOKEN_URI)).thenReturn(requestBodySpec);
+        when(requestBodySpec.header(eq(HttpHeaders.AUTHORIZATION), anyString())).thenReturn(requestBodySpec);
+        when(requestBodySpec.contentType(MediaType.APPLICATION_FORM_URLENCODED)).thenReturn(requestBodySpec);
+        when(requestBodySpec.body(any(String.class))).thenReturn(requestBodySpec);
+        when(requestBodySpec.retrieve()).thenReturn(responseSpec);
+
+        Map<String, Object> errorResponse = new HashMap<>();
+        errorResponse.put("error", "invalid_grant");
+        errorResponse.put("error_description", "Invalid refresh token");
+        when(responseSpec.body(Map.class)).thenReturn(errorResponse);
+
+
+        // when / then
+        RuntimeException thrown = assertThrows(RuntimeException.class, () ->
+                spotifyApiService.getUserInfo(principal));
+
+        assertTrue(thrown.getMessage().contains("Failed to refresh Spotify Access Token"));
+        assertTrue(thrown.getMessage().contains(errorResponse.toString()));
+
+        verify(tokenRepository).findById(SPOTIFY_USER_ID);
+        verify(mockSpotifyAuthRestClient).post();
+        verify(tokenRepository, never()).save(any(UserSpotifyTokens.class));
+        verifyNoMoreInteractions(mockSpotifyApiRestClient);
+    }
+
+    @Test
+    void givenUserWithExpiredSpotifyTokenAndRefreshResponseHasNoNewRefreshToken_whenGetUserInfo_thenRefreshTokenAndReturnUserProfile() {
+        // given
+        Principal principal = mock(Principal.class);
+        when(principal.getName()).thenReturn(SPOTIFY_USER_ID);
+
+        UserSpotifyTokens userTokens = new UserSpotifyTokens();
+        userTokens.setSpotifyUserId(SPOTIFY_USER_ID);
+        userTokens.setAccessToken(INITIAL_ACCESS_TOKEN);
+        userTokens.setAccessTokenExpiresAt(Instant.now().minus(1, ChronoUnit.HOURS));
+        userTokens.setRefreshToken(INITIAL_REFRESH_TOKEN);
+
+        when(tokenRepository.findById(SPOTIFY_USER_ID)).thenReturn(Optional.of(userTokens));
+
+        when(mockSpotifyAuthRestClient.post()).thenReturn(requestBodyUriSpec);
+        when(requestBodyUriSpec.uri(TOKEN_URI)).thenReturn(requestBodySpec);
+        when(requestBodySpec.header(eq(HttpHeaders.AUTHORIZATION), anyString())).thenReturn(requestBodySpec);
+        when(requestBodySpec.contentType(MediaType.APPLICATION_FORM_URLENCODED)).thenReturn(requestBodySpec);
+        when(requestBodySpec.body(any(String.class))).thenReturn(requestBodySpec);
+        when(requestBodySpec.retrieve()).thenReturn(responseSpec);
+
+        Map<String, Object> refreshTokenResponse = new HashMap<>();
+        refreshTokenResponse.put("access_token", NEW_ACCESS_TOKEN);
+        refreshTokenResponse.put("expires_in", 3600);
+        when(responseSpec.body(Map.class)).thenReturn(refreshTokenResponse);
+
+        when(mockSpotifyApiRestClient.get()).thenReturn(requestHeadersUriSpec);
+        when(requestHeadersUriSpec.uri(API_URI + "/me")).thenReturn(requestHeadersSpec);
+        when(requestHeadersSpec.header(HttpHeaders.AUTHORIZATION, "Bearer " + NEW_ACCESS_TOKEN)).thenReturn(requestHeadersSpec);
+        when(requestHeadersSpec.retrieve()).thenReturn(responseSpec);
+        SpotifyUserProfile expectedProfile = new SpotifyUserProfile();
+        expectedProfile.setDisplayName("Refreshed User Display No New Refresh Token");
+        when(responseSpec.body(SpotifyUserProfile.class)).thenReturn(expectedProfile);
+
+        // when
+        SpotifyUserProfile actualProfile = spotifyApiService.getUserInfo(principal);
+
+        // then
+        assertNotNull(actualProfile);
+        assertEquals("Refreshed User Display No New Refresh Token", actualProfile.getDisplayName());
+
+        verify(tokenRepository).findById(SPOTIFY_USER_ID);
+        verify(mockSpotifyAuthRestClient).post();
+        verify(tokenRepository).save(userTokens);
+        assertEquals(NEW_ACCESS_TOKEN, userTokens.getAccessToken());
+        assertEquals(INITIAL_REFRESH_TOKEN, userTokens.getRefreshToken());
+        assertTrue(userTokens.getAccessTokenExpiresAt().isAfter(Instant.now()));
+        verify(mockSpotifyApiRestClient).get();
+        verify(requestHeadersSpec).header(HttpHeaders.AUTHORIZATION, "Bearer " + NEW_ACCESS_TOKEN);
     }
 }
