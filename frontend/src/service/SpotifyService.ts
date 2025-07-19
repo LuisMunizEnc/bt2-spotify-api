@@ -1,13 +1,20 @@
 import { API_CONFIG } from '../config/api';
 import axiosInstance from './AxiosInstance';
 import type { AxiosResponse } from 'axios';
-import type { Track, Playlist, Artist, Album, SearchResults } from '../types';
+import type { Track, Playlist, Artist, Album, SearchResults, ArtistPageResults } from '../types';
 
 class SpotifyService {
     async search(query: string): Promise<SearchResults> {
         const response: AxiosResponse<SearchResults> = await axiosInstance.get(
             `${API_CONFIG.BASE_URL}/search`,
             { params: { q: query } }
+        );
+        return response.data;
+    }
+
+    async artistPage(id: string): Promise<ArtistPageResults> {
+        const response: AxiosResponse<ArtistPageResults> = await axiosInstance.get(
+            `${API_CONFIG.BASE_URL}/artists/${id}`
         );
         console.log(response.data);
         return response.data;

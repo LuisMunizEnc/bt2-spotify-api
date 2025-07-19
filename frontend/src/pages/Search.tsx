@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Search as SearchIcon } from 'lucide-react';
 import { TrackCard } from '../components/TrackCard';
 import { Button } from '../components/ui/Button'
@@ -49,7 +49,7 @@ function SearchPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-green-900">
+    <div className="min-h-screen bg-gradient-to-br from-black via-black to-green-900">
       <Navigation />
 
       {/* Search Bar */}

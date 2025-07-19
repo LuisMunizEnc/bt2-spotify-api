@@ -37,7 +37,7 @@ export const PlaylistCard: React.FC<PlaylistCardProps> = ({ playlist }) => {
             {playlist.name}
           </h3>
           <p className="text-gray-400 text-sm truncate">by {playlist.owner.display_name}</p>
-          <div className="flex items-center text-gray-500 text-xs mt-1">
+          <div className="flex justify-center text-gray-500 text-xs mt-1">
             <span>{playlist.tracks.total} songs</span>
           </div>
         </div>

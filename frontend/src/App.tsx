@@ -5,6 +5,7 @@ import { LoginPage } from './pages/Login';
 import { OAuthCallback } from './pages/OAuthCallback';
 import { PrivateRoute } from './components/PrivateRoute';
 import { AuthProvider } from './context/AuthContext';
+import { ArtistPage } from './pages/ArtistPage';
 
 function App() {
   return (
@@ -16,6 +17,11 @@ function App() {
           <Route path="/search" element={
             <PrivateRoute>
               <SearchPage />
+            </PrivateRoute>
+          } />
+          <Route path="/artist/:id" element={
+            <PrivateRoute>
+              <ArtistPage />
             </PrivateRoute>
           } />
         </Routes>

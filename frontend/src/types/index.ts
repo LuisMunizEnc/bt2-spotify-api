@@ -31,6 +31,12 @@ export interface Artist{
     name: string;
     images: SpotifyImage[];
     external_urls: externalURLs;
+    followers: SpotifyFollowers;
+}
+
+export interface SpotifyFollowers{
+    href: string;
+    total: number;
 }
 
 export interface Track{
@@ -79,4 +85,10 @@ export interface SearchResults {
     albums: Album[];
     artists: Artist[];
     playlists: Playlist[];
+}
+
+export interface ArtistPageResults {
+    artistProfile: Artist;
+    topTracks: Track[];
+    albums: Album[];
 }

@@ -5,9 +5,10 @@ import type { Track } from '../types';
 interface TrackCardProps {
   track: Track;
   index: number;
+  showAlbum?: boolean
 }
 
-export const TrackCard: React.FC<TrackCardProps> = ({ track, index }) => {
+export const TrackCard: React.FC<TrackCardProps> = ({ track, index, showAlbum = true }) => {
   const formatDuration = (ms: number) => {
     const minutes = Math.floor(ms / 60000);
     const seconds = Math.floor((ms % 60000) / 1000);
@@ -21,7 +22,7 @@ export const TrackCard: React.FC<TrackCardProps> = ({ track, index }) => {
       </div>
       
       <div className="flex-shrink-0 ml-4">
-        {track.album.images[0].url ? (
+        {track.album.images[0].url && showAlbum ? (
           <img 
             src={track.album.images[0].url} 
             alt="track_image"
