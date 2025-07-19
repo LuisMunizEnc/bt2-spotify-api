@@ -7,16 +7,15 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
-@AllArgsConstructor
 @NoArgsConstructor
+@AllArgsConstructor
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class SpotifyUserProfile {
+public class SpotifySearchPlaylist {
     private String id;
-    @JsonProperty("display_name") private String displayName;
-    private String email;
-    private String country;
+    private String name;
+    private SpotifyOwner owner;
+    private String description;
     private SpotifyImage[] images;
-    private String product;
-    private String uri;
+    @JsonProperty("external_urls") private SpotifyExternalUrl externalUrl;
+    private SpotifyTracksPlaylist tracks;
 }
-

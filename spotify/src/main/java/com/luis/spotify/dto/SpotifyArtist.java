@@ -10,13 +10,10 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class SpotifyUserProfile {
+public class SpotifyArtist {
     private String id;
-    @JsonProperty("display_name") private String displayName;
-    private String email;
-    private String country;
+    private String name;
     private SpotifyImage[] images;
-    private String product;
-    private String uri;
+    @JsonProperty("external_urls") private SpotifyExternalUrl externalUrl;
+    private SpotifyFollowers followers;
 }
-

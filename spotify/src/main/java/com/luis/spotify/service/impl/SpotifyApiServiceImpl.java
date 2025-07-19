@@ -41,7 +41,7 @@ public class SpotifyApiServiceImpl implements SpotifyApiService {
         this.tokenRepository = tokenRepository;
     }
 
-    private UserSpotifyTokens refreshSpotifyAccessToken(UserSpotifyTokens user){
+    protected UserSpotifyTokens refreshSpotifyAccessToken(UserSpotifyTokens user){
         log.info("Received token update action for {}", user.getSpotifyUserId());
         String refreshToken = user.getRefreshToken();
 

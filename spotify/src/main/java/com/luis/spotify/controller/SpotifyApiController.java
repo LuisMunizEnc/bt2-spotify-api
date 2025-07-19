@@ -3,8 +3,8 @@ package com.luis.spotify.controller;
 import com.luis.spotify.dto.SpotifyUserProfile;
 import com.luis.spotify.service.impl.SpotifyApiServiceImpl;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -12,6 +12,7 @@ import java.security.Principal;
 
 @RestController
 @Slf4j
+@CrossOrigin
 public class SpotifyApiController {
     private final SpotifyApiServiceImpl spotifyApiServiceImpl;
 

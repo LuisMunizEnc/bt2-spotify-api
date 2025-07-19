@@ -5,10 +5,9 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
-@AllArgsConstructor
 @NoArgsConstructor
-public class SpotifyImage {
-    private String url;
-    private Integer height;
-    private Integer width;
+@AllArgsConstructor
+public class SpotifyTracksPlaylist {
+    private String href;
+    private Integer total;
 }
