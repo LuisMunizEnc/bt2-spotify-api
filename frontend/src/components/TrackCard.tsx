@@ -50,7 +50,7 @@ export const TrackCard: React.FC<TrackCardProps> = ({ track, index }) => {
 
       <div className="flex-shrink-0 ml-4 flex items-center">
         <Clock className="w-4 h-4 text-white mr-1" />
-        <span className="text-white text-xs">{formatDuration(track.durationMs)}</span>
+        <span className="text-white text-xs">{formatDuration(track.duration_ms)}</span>
       </div>
     </div>
   );

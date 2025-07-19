@@ -15,15 +15,14 @@ export interface SpotifyImage{
 }
 
 export interface Album{
-    // TODO: limit tracks: handling
     id: string;
-    albumType: string;
-    totalTracks: string;
-    externalURLs: externalURLs;
+    album_type: string;
+    total_tracks: string;
+    external_url: externalURLs;
     images: SpotifyImage[];
     name: string;
     artists: Artist[];
-    releaseDate: string;
+    release_date: string;
     tracks: Track[]
 }
 
@@ -31,18 +30,17 @@ export interface Artist{
     id: string;
     name: string;
     images: SpotifyImage[];
-    externalURLs: externalURLs;
+    external_urls: externalURLs;
 }
 
 export interface Track{
     id: string;
     album: Album;
     artists: Artist[];
-    durationMs: number;
-    isPlayable?: boolean;
+    duration_ms: number;
     name: string;
     popularity?: number;
-    previewURL?: string;
+    preview_url?: string;
 }
 
 export interface Playlist{
@@ -51,17 +49,21 @@ export interface Playlist{
     name: string;
     images: SpotifyImage[];
     owner: Owner;
-    tracks: Track[];
-    externalURLs: externalURLs;
+    tracks: Track[] | SearchPlaylistTracks;
+    external_urls: externalURLs;
+}
+
+export interface SearchPlaylistTracks{
+    href: string;
+    total: number;
 }
 
 export interface Owner{
-    displayName: string;
+    display_name: string;
 }
 export interface externalURLs{
     spotify: string;
 }
-
 
 export interface AuthContextType {
     user: User | null;
@@ -70,4 +72,11 @@ export interface AuthContextType {
     logout: () => void;
     isAuthenticated: boolean;
     loading: boolean;
+}
+
+export interface SearchResults {
+    tracks: Track[];
+    albums: Album[];
+    artists: Artist[];
+    playlists: Playlist[];
 }

@@ -48,9 +48,7 @@ export const AlbumCard: React.FC<AlbumCardProps> = ({ album }) => {
                     </p>
                     <div className="flex items-center justify-center text-gray-500 text-xs mt-1">
                         <Calendar className="w-3 h-3 mr-1" />
-                        <span>{formatReleaseDate(album.releaseDate)}</span>
-                        <span className="mx-2">•</span>
-                        <span>{album.totalTracks} tracks</span>
+                        <span>{formatReleaseDate(album.release_date)}</span>
                     </div>
                 </div>
             </div>

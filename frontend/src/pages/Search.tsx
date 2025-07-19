@@ -1,126 +1,140 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
+import { Search as SearchIcon } from 'lucide-react';
 import { TrackCard } from '../components/TrackCard';
 import { Button } from '../components/ui/Button'
-import type { Album, Artist, Playlist, SpotifyImage, Track } from '../types';
+import type { SearchResults } from '../types';
 import { AlbumCard } from '../components/AlbumCard';
 import { ArtistCard } from '../components/ArtistCard';
 import { PlaylistCard } from '../components/PlaylistCard';
-import { useAuth } from '../context/AuthContext';
 import { Navigation } from '../components/Navigation';
+import { Card } from '../components/ui/Card';
+import { LoadingSpinner } from '../components/ui/LoadingSpinner';
+import { spotifyService } from '../service/SpotifyService';
 
 function SearchPage() {
-  const { logout } = useAuth();
 
-  useEffect(() => {
+  const [query, setQuery] = useState('');
+  const [results, setResults] = useState<SearchResults | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [hasSearched, setHasSearched] = useState(false);
 
+  const handleSearch = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!query.trim()) return;
 
-  }, []);
-
-  const randomId = () => Math.random().toString(36).substring(2, 10);
-  
-  const randomImage = (): SpotifyImage => ({
-    url: `https://picsum.photos/seed/${randomId()}/300/300`,
-    width: 300,
-    height: 300
-  });
-
-  const randomArtist = (): Artist => ({
-    id: randomId(),
-    name: `Artist ${Math.floor(Math.random() * 1000)}`,
-    images: [randomImage()],
-    externalURLs: {
-      spotify: `https://open.spotify.com/album/${randomId()}`
-    },
-  });
-
-  const randomPlaylist = (): Playlist => ({
-    id: randomId(),
-    description: "This is a placeholder description",
-    name: "Playlist Name",
-    images: [randomImage()],
-    owner: {
-        displayName: "Owner"
-    },
-    externalURLs: {
-        spotify: `https://open.spotify.com/album/${randomId()}`
-    },
-    tracks: []
-  });
-
-  function randomAlbum(): Album {
-    return {
-      id: randomId(),
-      albumType: "album",
-      totalTracks: `${Math.floor(Math.random() * 15 + 1)}`,
-      externalURLs: {
-        spotify: `https://open.spotify.com/album/${randomId()}`
-      },
-      images: [randomImage()],
-      name: `Album ${Math.floor(Math.random() * 1000)}`,
-      artists: [randomArtist()],
-      releaseDate: "12/12/12",
-      tracks: []
+    setLoading(true);
+    setHasSearched(true);
+    try {
+      const searchResults = await spotifyService.search(query);
+      setResults(searchResults);
+    } catch (error) {
+      console.error('Search failed:', error);
+      setResults(null);
+    } finally {
+      setLoading(false);
     }
-  }
+  };
 
-  function generateRandomTrack(): Track {
-    return {
-      id: randomId(),
-      album: randomAlbum(),
-      artists: [randomArtist()],
-      durationMs: Math.floor(Math.random() * 300000), 
-      name: `Track ${Math.floor(Math.random() * 10000)}`,
-      popularity: Math.floor(Math.random() * 100),
-      previewURL: `https://p.scdn.co/mp3-preview/${randomId()}`,
-      isPlayable: Math.random() > 0.1
-    };
-  }
+  const renderSection = (title: string, items: any[], renderItem: (item: any, index: number) => React.ReactNode) => {
+    if (!items || items.length === 0) return null;
+
+    return (
+      <div className="mb-8">
+        <h2 className="text-2xl font-bold text-white mb-4">{title}</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+          {items.slice(0, 8).map((item, index) => renderItem(item, index))}
+        </div>
+      </div>
+    );
+  };
 
   return (
-    <div className='min-h-screen bg-gradient-to-br from-black via-black to-green-950'>
-      <Navigation/>
-      <div className='max-w-7xl mx-auto flex flex-col mt-16 pb-6'>
-        <h1>Vite + React for Spotify API</h1>
-        <div className="card">
-          <h2>
-            Components:
-          </h2>
-          <div className='flex content-between justify-center items-center gap-5 my-10'>
-            <span>Button for search:</span>
-            <Button loading={false} size='sm'>Search</Button>
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-green-900">
+      <Navigation />
+
+      {/* Search Bar */}
+      <div className="max-w-7xl mx-auto p-6">
+        <Card className="mb-8">
+          <form onSubmit={handleSearch} className="flex gap-4">
+            <div className="flex-1 relative">
+              <SearchIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+              <input
+                type="text"
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder="Search for tracks, albums, artists, or playlists..."
+                className="w-full pl-10 pr-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+              />
+            </div>
+            <Button type="submit" loading={loading} disabled={!query.trim()}>
+              Search
+            </Button>
+          </form>
+        </Card>
+
+        {/* Loading State */}
+        {loading && (
+          <div className="flex items-center justify-center h-64">
+            <LoadingSpinner size="lg" />
           </div>
-          <hr />
-          <div className='flex flex-col content-between justify-center items-center gap-5 my-10'>
-            <span>Track card:</span>
-            <TrackCard track={generateRandomTrack()} index={0}/>
-            <TrackCard track={generateRandomTrack()} index={1}/>
+        )}
+
+        {/* Results */}
+        {!loading && results && (
+          <div>
+            {/* Tracks */}
+            {results.tracks && results.tracks.length > 0 && (
+              <div className="mb-8">
+                <h2 className="text-2xl font-bold text-white mb-4">Tracks</h2>
+                <Card>
+                  <div className="space-y-2">
+                    {results.tracks.slice(0, 10).map((track, index) => (
+                      <TrackCard key={track.id} track={track} index={index} />
+                    ))}
+                  </div>
+                </Card>
+              </div>
+            )}
+
+            {/* Artists */}
+            {renderSection('Artists', results.artists, (artist) => (
+              <ArtistCard key={artist.id} artist={artist} />
+            ))}
+
+            {/* Albums */}
+            {renderSection('Albums', results.albums, (album) => (
+              <AlbumCard key={album.id} album={album} />
+            ))}
+
+            {/* Playlists */}
+            {renderSection('Playlists', results.playlists, (playlist) => (
+              <PlaylistCard key={playlist.id} playlist={playlist} />
+            ))}
           </div>
-          <hr/>
-          <div className='flex flex-col content-between justify-center items-center gap-5 my-10'>
-            <span>Album card:</span>
-            <AlbumCard album={randomAlbum()}/>
+        )}
+
+        {/* No Results */}
+        {!loading && hasSearched && results &&
+          !results.tracks?.length && !results.albums?.length &&
+          !results.artists?.length && !results.playlists?.length && (
+            <div className="text-center py-12">
+              <SearchIcon className="w-16 h-16 text-gray-600 mx-auto mb-4" />
+              <h3 className="text-xl font-semibold text-gray-400 mb-2">No results found</h3>
+              <p className="text-gray-500">Try searching with different keywords</p>
+            </div>
+          )}
+
+        {/* Initial State */}
+        {!hasSearched && (
+          <div className="text-center py-12">
+            <SearchIcon className="w-16 h-16 text-gray-600 mx-auto mb-4" />
+            <h3 className="text-xl font-semibold text-gray-400 mb-2">Search Spotify</h3>
+            <p className="text-gray-500">Find your favorite tracks, albums, artists, and playlists</p>
           </div>
-          <hr/>
-          <div className='flex flex-col content-between justify-center items-center gap-5 my-10'>
-            <span>Artist card:</span>
-            <ArtistCard artist={randomArtist()}/>
-          </div>
-          <hr/>
-          <div className='flex flex-col content-between justify-center items-center gap-5 my-10'>
-            <span>Playlist card:</span>
-            <PlaylistCard playlist={randomPlaylist()}/>
-          </div>
-        </div>
-        <p className="read-the-docs">
-          End of ui. Let's work
-        </p>
-        <button
-          onClick={logout}>
-          Log out
-        </button>
+        )}
       </div>
     </div>
-  )
-}
+  );
+};
 
 export default SearchPage
