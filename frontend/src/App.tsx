@@ -6,6 +6,7 @@ import { OAuthCallback } from './pages/OAuthCallback';
 import { PrivateRoute } from './components/PrivateRoute';
 import { AuthProvider } from './context/AuthContext';
 import { ArtistPage } from './pages/ArtistPage';
+import { Dashboard } from './pages/Dashboard';
 
 function App() {
   return (
@@ -24,6 +25,13 @@ function App() {
               <ArtistPage />
             </PrivateRoute>
           } />
+          <Route path="/dashboard" 
+            element={
+              <PrivateRoute>
+                <Dashboard />
+              </PrivateRoute>
+            } 
+          />
         </Routes>
       </Router>
     </AuthProvider>

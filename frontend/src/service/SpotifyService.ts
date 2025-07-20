@@ -16,6 +16,21 @@ class SpotifyService {
         const response: AxiosResponse<ArtistPageResults> = await axiosInstance.get(
             `${API_CONFIG.BASE_URL}/artists/${id}`
         );
+        return response.data;
+    }
+
+    async getTopArtists(): Promise<Artist[]> {
+        const response: AxiosResponse<Artist[]> = await axiosInstance.get(
+          `${API_CONFIG.BASE_URL}/artists/top`,
+        );
+        console.log(response.data);
+        return response.data;
+    }
+
+    async getTopTracks(): Promise<Track[]> {
+        const response: AxiosResponse<Track[]> = await axiosInstance.get(
+          `${API_CONFIG.BASE_URL}/tracks/top`,
+        );
         console.log(response.data);
         return response.data;
     }

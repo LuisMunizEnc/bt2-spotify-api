@@ -38,8 +38,8 @@ export const Navigation: React.FC = () => {
                                     key={item.path}
                                     onClick={() => navigate(item.path)}
                                     className={`flex items-center space-x-2 px-3 py-2 rounded-lg transition-colors duration-200 ${isActive
-                                            ? 'bg-green-600 text-white'
-                                            : 'text-gray-400 hover:text-white hover:bg-gray-700'
+                                        ? 'bg-green-600 text-white'
+                                        : 'text-gray-400 hover:text-white hover:bg-gray-700'
                                         }`}
                                 >
                                     <Icon className="w-4 h-4" />
@@ -49,15 +49,20 @@ export const Navigation: React.FC = () => {
                         })}
                     </nav>
                 </div>
-                
-                <div className='flex items-center gap-3'>
-                    <h3 className="font-bold text-white">{user?.display_name}</h3>
-                    {user?.images &&
-                        <img
-                        src={user?.images[0].url}
-                        alt={user?.display_name}
-                        className="w-10 h-10 rounded-full object-cover shadow-lg"
-                    />}
+
+                <div className='flex gap-6'>
+                    {location.pathname !== '/dashboard' && (
+                        <div className='flex items-center gap-3'>
+                            <h3 className="font-bold text-white">{user?.display_name}</h3>
+                            {user?.images && (
+                                <img
+                                    src={user?.images[0].url}
+                                    alt={user?.display_name}
+                                    className="w-10 h-10 rounded-full object-cover shadow-lg"
+                                />
+                            )}
+                        </div>
+                    )}
                     <Button
                         onClick={handleLogout}
                         size="sm"
