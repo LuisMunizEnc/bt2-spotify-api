@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { User } from 'lucide-react';
 import type { Artist } from '../types';
@@ -20,7 +20,7 @@ export const ArtistCard: React.FC<ArtistCardProps> = ({ artist }) => {
             className="ounded-lg p-4 hover:bg-gray-950 cursor-pointer group"
         >
             <div className="flex flex-col items-center text-center">
-                {artist.images[0].url ? (
+                {artist.images.length !== 0 && artist.images[0].url ? (
                     <img
                         src={artist.images[0].url}
                         alt={artist.name}

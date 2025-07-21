@@ -30,7 +30,7 @@ export const AlbumCard: React.FC<AlbumCardProps> = ({ album, variant = 'horizont
         >
             {variant === 'horizontal' ? (
                 <div className="flex items-center mb-3">
-                    {album.images[0]?.url ? (
+                    {album.images.length !== 0 && album.images[0]?.url ? (
                         <img
                             src={album.images[0].url}
                             alt={album.name}
@@ -57,7 +57,7 @@ export const AlbumCard: React.FC<AlbumCardProps> = ({ album, variant = 'horizont
                 </div>
             ) : (
                 <div className="flex flex-col items-start">
-                    {album.images[0]?.url ? (
+                    {album.images.length !== 0 && album.images[0]?.url ? (
                         <div className="aspect-square w-full overflow-hidden rounded shadow-lg">
                             <img
                                 src={album.images[0].url}

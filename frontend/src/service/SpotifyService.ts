@@ -9,6 +9,7 @@ class SpotifyService {
             `${API_CONFIG.BASE_URL}/search`,
             { params: { q: query } }
         );
+        console.log(response.data);
         return response.data;
     }
 

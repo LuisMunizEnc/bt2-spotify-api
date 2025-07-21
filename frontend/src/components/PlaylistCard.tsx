@@ -20,7 +20,7 @@ export const PlaylistCard: React.FC<PlaylistCardProps> = ({ playlist }) => {
       className="rounded-lg p-4 hover:bg-gray-950 cursor-pointer group"
     >
       <div className="flex items-center mb-3">
-        {playlist.images[0].url ? (
+        {playlist.images.length !== 0 && playlist.images[0].url ? (
           <img 
             src={playlist.images[0].url} 
             alt={playlist.name}

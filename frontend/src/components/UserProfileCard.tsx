@@ -12,7 +12,7 @@ export const UserProfileCard: React.FC<UserProfileCardProps> = ({ user }) => {
     <div className="bg-gradient-to-r from-green-600 to-green-700 rounded-lg p-6 text-white shadow-xl">
       <div className="flex items-center">
         <div className="flex-shrink-0">
-          {user.images ? (
+          {user.images && user.images.length !== 0 ? (
             <img 
               src={user.images[0].url} 
               alt={user.display_name}

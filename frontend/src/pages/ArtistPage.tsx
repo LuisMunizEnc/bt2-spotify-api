@@ -70,7 +70,7 @@ export const ArtistPage = () => {
         {/* Artist Header */}
         <div className="mb-8">
           <div className="flex flex-col md:flex-row items-start md:items-end space-y-4 md:space-y-0 md:space-x-6">
-            {artistInfo.artistProfile ? (
+            {artistInfo.artistProfile && artistInfo.artistProfile.images.length !== 0 ? (
               <img 
                 src={artistInfo.artistProfile.images[0].url} 
                 alt={artistInfo.artistProfile.name}

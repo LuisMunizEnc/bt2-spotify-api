@@ -22,7 +22,7 @@ export const TrackCard: React.FC<TrackCardProps> = ({ track, index, showAlbum = 
       </div>
 
       <div className="flex-shrink-0 ml-4">
-        {showAlbum && track.album.images[0].url ? (
+        {showAlbum && track.album.images.length !== 0 && track.album.images[0].url ? (
           <img
             src={track.album.images[0].url}
             alt="track_image"

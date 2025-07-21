@@ -79,7 +79,7 @@ export const AlbumPage = () => {
         {/* Album Header */}
         <div className="mb-8">
           <div className="flex flex-col md:flex-row items-start md:items-end space-y-4 md:space-y-0 md:space-x-6">
-            {album.images[0].url ? (
+            {album.images.length !== 0 && album.images[0].url ? (
               <img 
                 src={album.images[0].url} 
                 alt={album.name}
