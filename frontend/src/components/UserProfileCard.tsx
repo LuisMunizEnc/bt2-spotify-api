@@ -29,7 +29,7 @@ export const UserProfileCard: React.FC<UserProfileCardProps> = ({ user }) => {
           <h2 className="text-2xl font-bold mb-2">{user.display_name}</h2>
           <p className="text-green-100 mb-3">{user.email}</p>
           
-          <div className="flex items-center space-x-4 text-sm">
+          <div className="flex justify-center space-x-4 text-sm text-center">
             {user.country && (
               <div className="flex items-center">
                 <MapPin className="w-4 h-4 mr-1" />

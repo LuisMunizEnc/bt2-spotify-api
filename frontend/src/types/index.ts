@@ -23,7 +23,7 @@ export interface Album{
     name: string;
     artists: Artist[];
     release_date: string;
-    tracks: Track[]
+    track: Track[]
 }
 
 export interface Artist{

@@ -7,6 +7,7 @@ import { PrivateRoute } from './components/PrivateRoute';
 import { AuthProvider } from './context/AuthContext';
 import { ArtistPage } from './pages/ArtistPage';
 import { Dashboard } from './pages/Dashboard';
+import { AlbumPage } from './pages/AlbumPage';
 
 function App() {
   return (
@@ -29,6 +30,13 @@ function App() {
             element={
               <PrivateRoute>
                 <Dashboard />
+              </PrivateRoute>
+            } 
+          />
+          <Route path="/album/:id" 
+            element={
+              <PrivateRoute>
+                <AlbumPage />
               </PrivateRoute>
             } 
           />

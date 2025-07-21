@@ -23,7 +23,6 @@ class SpotifyService {
         const response: AxiosResponse<Artist[]> = await axiosInstance.get(
           `${API_CONFIG.BASE_URL}/artists/top`,
         );
-        console.log(response.data);
         return response.data;
     }
 
@@ -31,7 +30,13 @@ class SpotifyService {
         const response: AxiosResponse<Track[]> = await axiosInstance.get(
           `${API_CONFIG.BASE_URL}/tracks/top`,
         );
-        console.log(response.data);
+        return response.data;
+    }
+
+    async getAlbum(id: string): Promise<Album> {
+        const response: AxiosResponse<Album> = await axiosInstance.get(
+            `${API_CONFIG.BASE_URL}/albums/${id}`
+        );
         return response.data;
     }
 }

@@ -20,11 +20,11 @@ export const TrackCard: React.FC<TrackCardProps> = ({ track, index, showAlbum = 
       <div className="flex-shrink-0 w-8 text-gray-400 text-sm font-medium">
         <span >{index + 1}</span>
       </div>
-      
+
       <div className="flex-shrink-0 ml-4">
-        {track.album.images[0].url && showAlbum ? (
-          <img 
-            src={track.album.images[0].url} 
+        {showAlbum && track.album.images[0].url ? (
+          <img
+            src={track.album.images[0].url}
             alt="track_image"
             className="w-10 h-10 rounded object-cover"
           />
@@ -45,9 +45,12 @@ export const TrackCard: React.FC<TrackCardProps> = ({ track, index, showAlbum = 
         </p>
       </div>
 
-      <div className="flex-shrink-0 ml-4">
-        <p className="text-gray-400 text-xs">{track.album.name}</p>
-      </div>
+      {showAlbum &&
+        <div className="flex-shrink-0 ml-4">
+          <p className="text-gray-400 text-xs">{track.album.name}</p>
+        </div>
+      }
+
 
       <div className="flex-shrink-0 ml-4 flex items-center">
         <Clock className="w-4 h-4 text-white mr-1" />
