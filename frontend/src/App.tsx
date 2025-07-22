@@ -1,35 +1,49 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
 import './App.css'
+import { Route, BrowserRouter as Router, Routes } from 'react-router-dom';
+import SearchPage from './pages/Search';
+import { LoginPage } from './pages/Login';
+import { OAuthCallback } from './pages/OAuthCallback';
+import { PrivateRoute } from './components/PrivateRoute';
+import { AuthProvider } from './context/AuthContext';
+import { ArtistPage } from './pages/ArtistPage';
+import { Dashboard } from './pages/Dashboard';
+import { AlbumPage } from './pages/AlbumPage';
 
 function App() {
-  const [count, setCount] = useState(0)
-
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+    <AuthProvider>
+      <Router>
+        <Routes>
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/get-code" element={<OAuthCallback />} />
+          <Route path="/search" element={
+            <PrivateRoute>
+              <SearchPage />
+            </PrivateRoute>
+          } />
+          <Route path="/artist/:id" element={
+            <PrivateRoute>
+              <ArtistPage />
+            </PrivateRoute>
+          } />
+          <Route path="/dashboard" 
+            element={
+              <PrivateRoute>
+                <Dashboard />
+              </PrivateRoute>
+            } 
+          />
+          <Route path="/album/:id" 
+            element={
+              <PrivateRoute>
+                <AlbumPage />
+              </PrivateRoute>
+            } 
+          />
+        </Routes>
+      </Router>
+    </AuthProvider>
+  );
 }
 
 export default App
