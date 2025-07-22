@@ -31,6 +31,7 @@ class SpotifyService {
         const response: AxiosResponse<Track[]> = await axiosInstance.get(
           `${API_CONFIG.BASE_URL}/tracks/top`,
         );
+        console.log(response.data);
         return response.data;
     }
 

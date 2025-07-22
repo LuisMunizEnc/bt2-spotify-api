@@ -8,6 +8,7 @@ import { UserProfileCard } from '../components/UserProfileCard';
 import { spotifyService } from '../service/SpotifyService';
 import type { Artist, Track } from '../types';
 import { TrackCard } from '../components/TrackCard';
+import { Player } from '../components/Player';
 
 export const Dashboard = () => {
     const { user } = useAuth();
@@ -86,8 +87,8 @@ export const Dashboard = () => {
                         <p className="text-gray-400">No top tracks available.</p>
                     )}
                 </div>
-
             </main>
+            {/* <Player/> */}
         </div>
     );
 };

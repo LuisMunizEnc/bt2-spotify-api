@@ -54,7 +54,7 @@ export const Navigation: React.FC = () => {
                     {location.pathname !== '/dashboard' && (
                         <div className='flex items-center gap-3'>
                             <h3 className="font-bold text-white">{user?.display_name}</h3>
-                            {user?.images && (
+                            {user?.images && user.images.length !== 0 && (
                                 <img
                                     src={user?.images[0].url}
                                     alt={user?.display_name}

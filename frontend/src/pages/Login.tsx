@@ -38,13 +38,10 @@ export const LoginPage: React.FC = () => {
             <span>Login with Spotify</span>
           </Button>
         </div>
-        { isAuthenticated && <div>Hay token: <br/>{authService.getToken()}</div>}
+        {isAuthenticated && <div>Hay token: <br />{authService.getToken()}</div>}
         <p className="text-gray-400 mt-6">
           Connect your Spotify account to view your music data
         </p>
-        <button
-        onClick={logout}
-      >Log out</button>
       </div>
     </div>
   );
