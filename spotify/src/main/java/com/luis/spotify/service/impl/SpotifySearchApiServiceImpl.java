@@ -22,7 +22,6 @@ import java.util.Optional;
 @Slf4j
 public class SpotifySearchApiServiceImpl implements SpotifySearchApiService {
     private final RestClient spotifyApiRestClient;
-    private final UserSpotifyTokenRepository tokenRepository;
     private final SpotifyApiServiceImpl spotifyApiService;
     private final ObjectMapper objectMapper;
 
@@ -33,7 +32,6 @@ public class SpotifySearchApiServiceImpl implements SpotifySearchApiService {
                                        UserSpotifyTokenRepository tokenRepository,
                                        SpotifyApiServiceImpl spotifyApiService) {
         this.spotifyApiRestClient = restClientBuilder.build();
-        this.tokenRepository = tokenRepository;
         this.spotifyApiService = spotifyApiService;
         this.objectMapper = new ObjectMapper();
     }
@@ -99,18 +97,9 @@ public class SpotifySearchApiServiceImpl implements SpotifySearchApiService {
         String spotifyUserId = principal.getName();
         String types = "album,track,playlist,artist";
 
-        Optional<UserSpotifyTokens> optionalUser = tokenRepository.findById(spotifyUserId);
-        UserSpotifyTokens user = optionalUser.orElseThrow(() ->
-                new RuntimeException("No tokens found for user: " + spotifyUserId)
-        );
+        UserSpotifyTokens user = spotifyApiService.getAndRefreshUserToken(spotifyUserId);
 
-        if (user.isAccessTokenExpired()) {
-            spotifyApiService.refreshSpotifyAccessToken(user);
-            tokenRepository.save(user);
-            log.info("Token refreshed and saved for user {}", spotifyUserId);
-        }
-
-        String searchUri = String.format("%s/search?q=%s&type=%s&limit=5", apiUri, query, types);
+        String searchUri = String.format("%s/search?q=%s&type=%s&limit=8", apiUri, query, types);
 
         Map<String, Object> responseMap = spotifyApiRestClient.get()
                 .uri(searchUri)

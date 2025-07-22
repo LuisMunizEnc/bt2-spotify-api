@@ -7,4 +7,6 @@ import java.security.Principal;
 
 public interface SpotifyApiService {
     SpotifyUserProfile getUserInfo(Principal principal);
+
+    UserSpotifyTokens getAndRefreshUserToken(String spotifyUserId);
 }

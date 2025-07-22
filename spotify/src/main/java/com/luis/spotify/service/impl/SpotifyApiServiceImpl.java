@@ -71,18 +71,25 @@ public class SpotifyApiServiceImpl implements SpotifyApiService {
         }
     }
 
-    public SpotifyUserProfile getUserInfo(Principal principal){
-        String spotifyUserId = principal.getName();
+    public UserSpotifyTokens getAndRefreshUserToken(String spotifyUserId) {
         Optional<UserSpotifyTokens> optionalUser = tokenRepository.findById(spotifyUserId);
         UserSpotifyTokens user = optionalUser.orElseThrow(() ->
                 new RuntimeException("No tokens found for user: " + spotifyUserId)
         );
 
-        if(user.isAccessTokenExpired()){
+        if (user.isAccessTokenExpired()) {
+            log.info("Access token expired for user {}. Refreshing...", spotifyUserId);
             refreshSpotifyAccessToken(user);
             tokenRepository.save(user);
-            log.info("Token refreshed for user {}", user.getSpotifyUserId());
+            log.info("Token refreshed and saved for user {}", spotifyUserId);
         }
+        return user;
+    }
+
+    public SpotifyUserProfile getUserInfo(Principal principal){
+        String spotifyUserId = principal.getName();
+
+        UserSpotifyTokens user = getAndRefreshUserToken(spotifyUserId);
 
         return spotifyApiRestClient.get()
                 .uri(apiUri+"/me")

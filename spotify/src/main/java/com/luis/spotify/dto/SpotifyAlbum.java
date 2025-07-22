@@ -17,4 +17,6 @@ public class SpotifyAlbum {
     @JsonProperty("release_date") private String releaseDate;
     @JsonProperty("external_urls") private SpotifyExternalUrl externalUrl;
     private SpotifyArtist[] artists;
+    @JsonProperty("total_tracks") private Integer totalTracks;
+    private SpotifyTrack[] track;
 }

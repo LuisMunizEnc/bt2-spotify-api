@@ -6,7 +6,6 @@ import com.luis.spotify.repository.UserSpotifyTokenRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -122,10 +121,10 @@ public class SpotifySearchApiServiceImplTest {
         when(principal.getName()).thenReturn(SPOTIFY_USER_ID);
 
         UserSpotifyTokens userTokens = createUserTokens(false);
-        when(tokenRepository.findById(SPOTIFY_USER_ID)).thenReturn(Optional.of(userTokens));
+        when(spotifyApiService.getAndRefreshUserToken(SPOTIFY_USER_ID)).thenReturn(userTokens);
 
         SpotifyTrack track = new SpotifyTrack("id1", "Track Name", null, null, 12345, null, 1);
-        SpotifyAlbum album = new SpotifyAlbum("idA", "Album Name", null, "2023-01-01", null, null);
+        SpotifyAlbum album = new SpotifyAlbum("idA", "Album Name", null, "2023-01-01", null, null, null,null);
         SpotifyArtist artist = new SpotifyArtist("idAr", "Artist Name", null, null, null);
         SpotifySearchPlaylist playlist = new SpotifySearchPlaylist("idP", "Playlist Name", null, "Desc", null, null, new SpotifyTracksPlaylist("href", 5));
 
@@ -161,7 +160,7 @@ public class SpotifySearchApiServiceImplTest {
         assertEquals(5, results.getPlaylists().get(0).getTracks().getTotal());
 
 
-        verify(tokenRepository, times(1)).findById(SPOTIFY_USER_ID);
+        verify(spotifyApiService, times(1)).getAndRefreshUserToken(SPOTIFY_USER_ID);
         verify(spotifyApiService, never()).refreshSpotifyAccessToken(any(UserSpotifyTokens.class));
         verify(tokenRepository, never()).save(any(UserSpotifyTokens.class));
         verify(mockSpotifyApiRestClient, times(1)).get();
@@ -171,20 +170,18 @@ public class SpotifySearchApiServiceImplTest {
     @Test
     void givenUserWithExpiredToken_whenSearch_thenRefreshTokenAndReturnSearchResults() {
         // given
-        Principal principal = mock(Principal.class);
-        when(principal.getName()).thenReturn(SPOTIFY_USER_ID);
+            Principal principal = mock(Principal.class);
+            when(principal.getName()).thenReturn(SPOTIFY_USER_ID);
 
-        UserSpotifyTokens userTokens = createUserTokens(true);
-        when(tokenRepository.findById(SPOTIFY_USER_ID)).thenReturn(Optional.of(userTokens));
+            UserSpotifyTokens refreshedUserTokens = new UserSpotifyTokens();
+            refreshedUserTokens.setSpotifyUserId(SPOTIFY_USER_ID);
+            refreshedUserTokens.setAccessToken(NEW_ACCESS_TOKEN);
+            refreshedUserTokens.setAccessTokenExpiresAt(Instant.now().plus(1, ChronoUnit.HOURS));
+            refreshedUserTokens.setRefreshToken(INITIAL_REFRESH_TOKEN);
 
-        doAnswer(invocation -> {
-            UserSpotifyTokens user = invocation.getArgument(0);
-            user.setAccessToken(NEW_ACCESS_TOKEN);
-            user.setAccessTokenExpiresAt(Instant.now().plus(1, ChronoUnit.HOURS));
-            return null;
-        }).when(spotifyApiService).refreshSpotifyAccessToken(any(UserSpotifyTokens.class));
+            when(spotifyApiService.getAndRefreshUserToken(SPOTIFY_USER_ID)).thenReturn(refreshedUserTokens);
 
-        Map<String, Object> apiResponse = createSpotifyApiResponse(
+            Map<String, Object> apiResponse = createSpotifyApiResponse(
                 Collections.singletonList(new SpotifyTrack("id2", "Refreshed Track", null, null, 123, null, 1)),
                 Collections.emptyList(), Collections.emptyList(), Collections.emptyList()
         );
@@ -198,9 +195,7 @@ public class SpotifySearchApiServiceImplTest {
         assertFalse(results.getTracks().isEmpty());
         assertEquals("Refreshed Track", results.getTracks().get(0).getName());
 
-        verify(tokenRepository, times(1)).findById(SPOTIFY_USER_ID);
-        verify(spotifyApiService, times(1)).refreshSpotifyAccessToken(userTokens);
-        verify(tokenRepository, times(1)).save(userTokens);
+        verify(spotifyApiService, times(1)).getAndRefreshUserToken(SPOTIFY_USER_ID);
         verify(mockSpotifyApiRestClient, times(1)).get();
         verify(requestHeadersSpec, times(1)).header(HttpHeaders.AUTHORIZATION, "Bearer " + NEW_ACCESS_TOKEN);
     }
@@ -211,16 +206,17 @@ public class SpotifySearchApiServiceImplTest {
         Principal principal = mock(Principal.class);
         when(principal.getName()).thenReturn(SPOTIFY_USER_ID);
 
-        when(tokenRepository.findById(SPOTIFY_USER_ID)).thenReturn(Optional.empty());
-        
+        when(spotifyApiService.getAndRefreshUserToken(SPOTIFY_USER_ID)).thenThrow(
+                new RuntimeException("No tokens found for user: " + SPOTIFY_USER_ID)
+        );
+
         // when / then
         RuntimeException thrown = assertThrows(RuntimeException.class, () ->
                 spotifySearchApiService.search(principal, TEST_QUERY)
         );
         assertEquals("No tokens found for user: " + SPOTIFY_USER_ID, thrown.getMessage());
 
-        verify(tokenRepository, times(1)).findById(SPOTIFY_USER_ID);
-        verifyNoInteractions(spotifyApiService); 
+        verify(spotifyApiService, times(1)).getAndRefreshUserToken(SPOTIFY_USER_ID);
         verifyNoInteractions(mockSpotifyApiRestClient);
     }
 
@@ -231,7 +227,7 @@ public class SpotifySearchApiServiceImplTest {
         when(principal.getName()).thenReturn(SPOTIFY_USER_ID);
 
         UserSpotifyTokens userTokens = createUserTokens(false);
-        when(tokenRepository.findById(SPOTIFY_USER_ID)).thenReturn(Optional.of(userTokens));
+        when(spotifyApiService.getAndRefreshUserToken(SPOTIFY_USER_ID)).thenReturn(userTokens);
 
         when(responseSpec.body(Map.class)).thenReturn(null);
 
@@ -245,7 +241,7 @@ public class SpotifySearchApiServiceImplTest {
         assertTrue(results.getArtists().isEmpty());
         assertTrue(results.getPlaylists().isEmpty());
 
-        verify(tokenRepository, times(1)).findById(SPOTIFY_USER_ID);
+        verify(spotifyApiService, times(1)).getAndRefreshUserToken(SPOTIFY_USER_ID);
         verify(mockSpotifyApiRestClient, times(1)).get();
     }
 
@@ -256,7 +252,7 @@ public class SpotifySearchApiServiceImplTest {
         when(principal.getName()).thenReturn(SPOTIFY_USER_ID);
 
         UserSpotifyTokens userTokens = createUserTokens(false);
-        when(tokenRepository.findById(SPOTIFY_USER_ID)).thenReturn(Optional.of(userTokens));
+        when(spotifyApiService.getAndRefreshUserToken(SPOTIFY_USER_ID)).thenReturn(userTokens);
 
         when(responseSpec.body(Map.class)).thenReturn(new HashMap<>());
 
@@ -270,7 +266,7 @@ public class SpotifySearchApiServiceImplTest {
         assertTrue(results.getArtists().isEmpty());
         assertTrue(results.getPlaylists().isEmpty());
 
-        verify(tokenRepository, times(1)).findById(SPOTIFY_USER_ID);
+        verify(spotifyApiService, times(1)).getAndRefreshUserToken(SPOTIFY_USER_ID);
         verify(mockSpotifyApiRestClient, times(1)).get();
     }
 
@@ -281,7 +277,7 @@ public class SpotifySearchApiServiceImplTest {
         when(principal.getName()).thenReturn(SPOTIFY_USER_ID);
 
         UserSpotifyTokens userTokens = createUserTokens(false);
-        when(tokenRepository.findById(SPOTIFY_USER_ID)).thenReturn(Optional.of(userTokens));
+        when(spotifyApiService.getAndRefreshUserToken(SPOTIFY_USER_ID)).thenReturn(userTokens);
 
         Map<String, Object> apiResponse = new HashMap<>();
         Map<String, Object> tracksMap = new HashMap<>();
