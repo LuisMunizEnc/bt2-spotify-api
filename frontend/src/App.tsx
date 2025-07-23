@@ -1,5 +1,5 @@
-import './App.css'
-import { Route, BrowserRouter as Router, Routes } from 'react-router-dom';
+import './App.css';
+import { Navigate, Route, BrowserRouter as Router, Routes } from 'react-router-dom';
 import SearchPage from './pages/Search';
 import { LoginPage } from './pages/Login';
 import { OAuthCallback } from './pages/OAuthCallback';
@@ -14,6 +14,7 @@ function App() {
     <AuthProvider>
       <Router>
         <Routes>
+        <Route path="/" element={<Navigate to="/login" replace />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/get-code" element={<OAuthCallback />} />
           <Route path="/search" element={
