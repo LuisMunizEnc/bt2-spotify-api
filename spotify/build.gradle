@@ -5,12 +5,16 @@ plugins {
 	id 'jacoco'
 }
 
+bootJar {
+	archiveFileName = 'app.jar'
+}
+
 group = 'com.luis'
 version = '0.0.1-SNAPSHOT'
 
 java {
 	toolchain {
-		languageVersion = JavaLanguageVersion.of(24)
+		languageVersion = JavaLanguageVersion.of(17)
 	}
 }
 
@@ -43,6 +47,10 @@ dependencies {
 tasks.named('test') {
 	useJUnitPlatform()
 	finalizedBy jacocoTestReport
+}
+
+tasks.named('jar') {
+	enabled = false
 }
 
 jacoco {

@@ -6,7 +6,7 @@ import { useAuth } from '../context/AuthContext';
 
 export const LoginPage: React.FC = () => {
   const [loading, setLoading] = useState(false);
-  const { isAuthenticated, logout } = useAuth()
+  const { isAuthenticated } = useAuth()
 
   const handleSpotifyLogin = async () => {
     setLoading(true);
