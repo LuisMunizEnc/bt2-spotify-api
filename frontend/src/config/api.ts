@@ -1,5 +1,5 @@
 export const API_CONFIG = {
-    BASE_URL: import.meta.env.VITE_API_URL || 'http://127.0.0.1:8080',
+    BASE_URL: 'http://127.0.0.1:8080',
     ENDPOINTS: {
       AUTH: {
         SPOTIFY_LOGIN: '/oauth2/authorization/spotify',
