@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Calendar, Clock, Music } from 'lucide-react';
+import { Calendar, Clock, Music } from 'lucide-react';
 import { Navigation } from '../components/Navigation';
 import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { TrendingUp } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { Navigation } from '../components/Navigation';
@@ -8,7 +8,6 @@ import { UserProfileCard } from '../components/UserProfileCard';
 import { spotifyService } from '../service/SpotifyService';
 import type { Artist, Track } from '../types';
 import { TrackCard } from '../components/TrackCard';
-import { Player } from '../components/Player';
 
 export const Dashboard = () => {
     const { user } = useAuth();
@@ -88,7 +87,6 @@ export const Dashboard = () => {
                     )}
                 </div>
             </main>
-            {/* <Player/> */}
         </div>
     );
 };

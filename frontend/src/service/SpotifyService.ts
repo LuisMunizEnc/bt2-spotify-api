@@ -1,7 +1,7 @@
 import { API_CONFIG } from '../config/api';
 import axiosInstance from './AxiosInstance';
 import type { AxiosResponse } from 'axios';
-import type { Track, Playlist, Artist, Album, SearchResults, ArtistPageResults } from '../types';
+import type { Track, Artist, Album, SearchResults, ArtistPageResults } from '../types';
 
 class SpotifyService {
     async search(query: string): Promise<SearchResults> {
