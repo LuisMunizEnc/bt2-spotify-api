@@ -36,9 +36,7 @@ CLIENT_ID: Paste the Client ID you obtained from the Spotify Dashboard.
 
 CLIENT_SECRET: Paste the Client Secret you obtained from the Spotify Dashboard.
 
-JWT_SECRET: Generate a long, random string and Base64 encode it. You can use an online tool like https://www.base64encode.org/
-
-Paste the output of this command here.
+JWT_SECRET: Generate a long, random string and Base64 encode it. You can use an online tool like https://www.base64encode.org/ and then paste it.
 
 ### 3. Running with Docker Compose
 Once you have configured the environment variables, you can build and run the application using Docker Compose.
