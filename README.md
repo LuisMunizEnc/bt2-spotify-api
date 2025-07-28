@@ -25,7 +25,7 @@ It will also ask you for the application redirect url.
 
 In the "Redirect URIs" section, add the following URL:
 
-- http://localhost:8080/login/oauth2/code/spotify (for the Spring Security authentication flow in the backend)
+- http://127.0.0.1:8080/login/oauth2/code/spotify (for the Spring Security authentication flow in the backend)
 
 ### 2. Environment Variable Configuration
 To keep your credentials secure, the project is configured to read the Spotify Client ID and Client Secret from environment variables. You will also need to generate a secret key for your application's internal JWTs.
@@ -60,6 +60,6 @@ Start the services:
 docker-compose up
 ```
 
-This will bring up your backend and frontend containers. The backend application should be accessible at http://localhost:8080.
+This will bring up your backend and frontend containers. The frontend application will be accessible at http://localhost:3000 and the backend application will be accessible at http://localhost:8080.
 
 That's it! Your Spotify application should now be running.
