@@ -30,13 +30,17 @@ In the "Redirect URIs" section, add the following URL:
 ### 2. Environment Variable Configuration
 To keep your credentials secure, the project is configured to read the Spotify Client ID and Client Secret from environment variables. You will also need to generate a secret key for your application's internal JWTs.
 
-Rename the `application-example.yml` to `application.yml`
+Rename the `application-example.yml` to `application.yml` and fill this variables:
 
 CLIENT_ID: Paste the Client ID you obtained from the Spotify Dashboard.
 
 CLIENT_SECRET: Paste the Client Secret you obtained from the Spotify Dashboard.
 
 JWT_SECRET: Generate a long, random string and Base64 encode it. You can use an online tool like https://www.base64encode.org/ and then paste it.
+
+MILLISECONDS: Time for token to expire (i used 604800000 = 1 week)
+
+FRONTEND_URL_REDIRECT: Frontend url, in my project is `http://127.0.0.1:3000/get-code`
 
 ### 3. Running with Docker Compose
 Once you have configured the environment variables, you can build and run the application using Docker Compose.
